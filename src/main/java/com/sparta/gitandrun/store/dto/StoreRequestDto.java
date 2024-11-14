@@ -1,29 +1,27 @@
 package com.sparta.gitandrun.store.dto;
 
-import com.sparta.gitandrun.category.entity.Category;
+import com.sparta.gitandrun.store.entity.Address;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public class StoreRequestDto {
 
-    @NotBlank(message = "Store name is required")
+    @NotBlank(message = "가게 이름은 필수 입력 항목입니다.")
     private String storeName;
 
-    @NotBlank(message = "Phone number is required")
+    @NotBlank(message = "전화번호는 필수 입력 항목입니다.")
     private String phone;
 
-    @NotNull(message = "Category is required")
-    private Category category;
+    @NotNull(message = "카테고리는 필수 입력 항목입니다.")
+    private String categoryName;  // 카테고리 이름을 String으로 받기
 
-    @NotBlank(message = "Address is required")
-    private String address;
+    @NotNull(message = "지역 번호는 필수 입력 항목입니다.")
+    private Long regionId;
 
-    private String addressDetail;
+    @NotNull(message = "주소는 필수 입력 항목입니다.")
+    private Address address;  // Address 임베디드 클래스를 사용
 
-    @NotBlank(message = "Zip code is required")
-    private String zipCode;
-
-    // Getters and setters
+    // Getter 및 Setter
     public String getStoreName() {
         return storeName;
     }
@@ -40,35 +38,27 @@ public class StoreRequestDto {
         this.phone = phone;
     }
 
-    public Category getCategory() {
-        return category;
+    public String getCategoryName() {
+        return categoryName;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
-    public String getAddress() {
+    public Address getAddress() {
         return address;
     }
 
-    public void setAddress(String address) {
+    public void setAddress(Address address) {
         this.address = address;
     }
 
-    public String getAddressDetail() {
-        return addressDetail;
+    public Long getRegionId() {
+        return regionId;
     }
 
-    public void setAddressDetail(String addressDetail) {
-        this.addressDetail = addressDetail;
-    }
-
-    public String getZipCode() {
-        return zipCode;
-    }
-
-    public void setZipCode(String zipCode) {
-        this.zipCode = zipCode;
+    public void setRegionId(Long regionId) {
+        this.regionId = regionId;
     }
 }

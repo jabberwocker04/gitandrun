@@ -11,15 +11,15 @@ public class LimitedStoreResponse {
     private String address;
     private String addressDetail;
     private String zipCode;
-    private Long userId;  // user 대신 userId만 포함
+    private Long userId;
 
     public LimitedStoreResponse(Store store) {
         this.storeName = store.getStoreName();
         this.phone = store.getPhone();
         this.category = store.getCategory().toString();
-        this.address = store.getAddress();
-        this.addressDetail = store.getAddressDetail();
-        this.zipCode = store.getZipCode();
-        this.userId = store.getUser().getUserId();  // User 객체 대신 userId만 반환
+        this.address = store.getAddress().getAddress();  // Address 필드 사용
+        this.addressDetail = store.getAddress().getAddressDetail();  // Address 필드 사용
+        this.zipCode = store.getAddress().getZipCode();  // Address 필드 사용
+        this.userId = store.getUser().getUserId();
     }
 }

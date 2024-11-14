@@ -2,7 +2,6 @@ package com.sparta.gitandrun.store.dto;
 
 import com.sparta.gitandrun.store.entity.Store;
 import lombok.Data;
-import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -23,7 +22,7 @@ public class FullStoreResponse {
     private String address;
     private String addressDetail;
     private String zipCode;
-    private Long userId;  // user 대신 userId만 포함
+    private Long userId;
 
     public FullStoreResponse(Store store) {
         this.storeId = store.getStoreId();
@@ -37,9 +36,9 @@ public class FullStoreResponse {
         this.updatedAt = store.getUpdatedAt();
         this.deletedBy = store.getDeletedBy();
         this.deletedAt = store.getDeletedAt();
-        this.address = store.getAddress();
-        this.addressDetail = store.getAddressDetail();
-        this.zipCode = store.getZipCode();
-        this.userId = store.getUser().getUserId();  // User 객체 대신 userId만 반환
+        this.address = store.getAddress().getAddress();  // Address 필드 사용
+        this.addressDetail = store.getAddress().getAddressDetail();  // Address 필드 사용
+        this.zipCode = store.getAddress().getZipCode();  // Address 필드 사용
+        this.userId = store.getUser().getUserId();
     }
 }

@@ -1,6 +1,6 @@
-package com.sparta.gitandrun.Review.dto;
+package com.sparta.gitandrun.review.dto;
 
-import com.sparta.gitandrun.Review.entity.Review;
+import com.sparta.gitandrun.review.entity.Review;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -13,24 +13,22 @@ import lombok.NoArgsConstructor;
 public class ReviewResponseDto {
 
     private UUID reviewId;
-    private String username; //임시 추가
+    private Long userId;
+    private Long orderId;
+    private UUID storeId;
     private String reviewContent;
     private Short reviewRating;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private Boolean isDeleted;
-    private LocalDateTime deletedAt;
-    private String deletedBy;
 
     public ReviewResponseDto(Review review) {
         this.reviewId = review.getReviewId();
-        this.username = review.getUsername();
+        this.userId = review.getUser().getUserId();
+        this.orderId = review.getOrder().getId();
+        this.storeId = review.getStoreId();
         this.reviewContent = review.getReviewContent();
         this.reviewRating = review.getReviewRating();
         this.createdAt = review.getCreatedAt();
         this.updatedAt = review.getUpdatedAt();
-        this.deletedAt = review.getDeletedAt();
-        this.deletedBy = review.getDeletedBy();
-        this.isDeleted = review.getIsDeleted();
     }
 }

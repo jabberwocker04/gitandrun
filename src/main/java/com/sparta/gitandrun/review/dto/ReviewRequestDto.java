@@ -1,4 +1,4 @@
-package com.sparta.gitandrun.Review.dto;
+package com.sparta.gitandrun.review.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

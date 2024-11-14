@@ -8,6 +8,15 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface OrderMenuRepository extends JpaRepository<OrderMenu, Long> {
-    @Query("select om from OrderMenu om where om.order.id in :orderIds")
+    @Query("select om " +
+            "from OrderMenu om " +
+            "join fetch om.menu " +
+            "where om.order.id in :orderIds")
     List<OrderMenu> findByOrderIds(@Param("orderIds")List<Long> orderIds);
+
+    @Query("select om " +
+            "from OrderMenu om " +
+            "join fetch om.menu " +
+            "where om.order.id = :orderId")
+    List<OrderMenu> findByOrderId(@Param("orderId") Long orderId);
 }

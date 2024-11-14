@@ -1,5 +1,6 @@
 package com.sparta.gitandrun.common.entity;
 
+import com.sparta.gitandrun.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
@@ -27,18 +28,21 @@ public class BaseEntity {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime deletedAt;
 
-    @Column
+    @Column(nullable = false)
     private String createdBy;
 
-    @Column
+    @Column(nullable = false)
     private String updatedBy;
+
     @Column
     private String deletedBy;
 
     protected void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
     }
-    protected void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
+
+    protected void initAuditInfo(User user) {
+        this.createdBy = user.getUsername();
+        this.updatedBy = user.getUsername();
     }
 }

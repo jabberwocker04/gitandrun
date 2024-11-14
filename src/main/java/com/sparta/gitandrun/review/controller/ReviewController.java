@@ -1,13 +1,12 @@
-package com.sparta.gitandrun.Review.controller;
+package com.sparta.gitandrun.review.controller;
 
-import com.sparta.gitandrun.Review.dto.ReviewRequestDto;
-import com.sparta.gitandrun.Review.dto.ReviewResponseDto;
-import com.sparta.gitandrun.Review.entity.Review;
-import com.sparta.gitandrun.Review.service.ReviewService;
+import com.sparta.gitandrun.review.dto.ReviewRequestDto;
+import com.sparta.gitandrun.review.dto.ReviewResponseDto;
+import com.sparta.gitandrun.review.entity.Review;
+import com.sparta.gitandrun.review.service.ReviewService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,10 +27,12 @@ public class ReviewController {
 
     //리뷰 작성
     @PostMapping
-    public ResponseEntity<Review> createReview(@RequestBody ReviewRequestDto requestDto) {
-        String username = "testUser"; // 임시로 설정한 사용자 이름
-        Review review = reviewService.createReview(requestDto, username);
-        return new ResponseEntity<>(review, HttpStatus.CREATED);
+    public ResponseEntity<ReviewResponseDto> createReview(
+            @RequestBody ReviewRequestDto requestDto,
+            @RequestParam Long userId,
+            @RequestParam Long orderId) {
+        Review review = reviewService.createReview(requestDto, userId, orderId);
+        return ResponseEntity.ok(new ReviewResponseDto(review));
     }
 
     //리뷰 전체 조회

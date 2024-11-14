@@ -2,7 +2,6 @@ package com.sparta.gitandrun.store.dto;
 
 import com.sparta.gitandrun.store.entity.Store;
 import lombok.Data;
-import lombok.Getter;
 
 import java.time.LocalDateTime;
 
@@ -24,9 +23,9 @@ public class StoreResponseDto {
         this.storeName = store.getStoreName();
         this.phone = store.getPhone();
         this.updatedBy = store.getUpdatedBy();
-        this.address = store.getAddress();
-        this.addressDetail = store.getAddressDetail();
-        this.zipCode = store.getZipCode();
+        this.address = store.getAddress().getAddress();  // Address 임베디드 필드 사용
+        this.addressDetail = store.getAddress().getAddressDetail();  // Address 임베디드 필드 사용
+        this.zipCode = store.getAddress().getZipCode();  // Address 임베디드 필드 사용
         this.category = store.getCategory().toString();
         this.createdAt = store.getCreatedAt();
         this.updatedAt = store.getUpdatedAt();
@@ -43,4 +42,3 @@ public class StoreResponseDto {
         this.zipCode = zipCode;
     }
 }
-

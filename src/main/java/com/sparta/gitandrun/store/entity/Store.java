@@ -27,7 +27,7 @@ public class Store {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)  // FK로 `category_id`를 연결
-    private Category category;  // `UUID` 대신 `Category` 타입으로 참조
+    private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id", nullable = false) // FK 관계로 `region_id` 추가
@@ -60,14 +60,9 @@ public class Store {
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
-    @Column(name = "address", nullable = false, length = 255)
-    private String address;
-
-    @Column(name = "address_detail", nullable = false, length = 255)
-    private String addressDetail;
-
-    @Column(name = "zip_code", nullable = false, length = 255)
-    private String zipCode;
+    // Address 임베디드 클래스 적용
+    @Embedded
+    private Address address;
 
     // User와의 ManyToOne 관계 설정
     @ManyToOne(fetch = FetchType.LAZY)

@@ -17,15 +17,11 @@ public interface StoreRepository extends JpaRepository<Store, UUID> {
     Optional<Store> findById(UUID storeId); // Store의 ID로 조회하는 메서드
     List<Store> findByUser_UserId(Long userId);
 
-    @Query("SELECT s FROM Store s WHERE s.storeName LIKE %:keyword% OR s.address LIKE %:keyword% ORDER BY " +
-            "CASE WHEN :sort = 'createdAt' THEN s.createdAt END DESC, " +
-            "CASE WHEN :sort = 'updatedAt' THEN s.updatedAt END DESC")
-    Page<Store> searchStores(@Param("keyword") String keyword,
-                             @Param("sort") String sort,
-                             Pageable pageable);
+    @Query("SELECT s FROM Store s WHERE s.storeName LIKE %:keyword% OR s.address.address LIKE %:keyword%")
+    Page<Store> searchStores(@Param("keyword") String keyword, Pageable pageable);
 
     Page<Store> findByCategoryId(UUID categoryId, Pageable pageable);
 
-    @Query("SELECT s FROM Store s WHERE s.storeName LIKE %:keyword% OR s.address LIKE %:keyword%")
+    @Query("SELECT s FROM Store s WHERE s.storeName LIKE %:keyword% OR s.address.address LIKE %:keyword%")
     Page<Store> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 }

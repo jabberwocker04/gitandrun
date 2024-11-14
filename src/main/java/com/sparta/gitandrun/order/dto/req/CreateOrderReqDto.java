@@ -11,5 +11,5 @@ import java.util.UUID;
 public class CreateOrderReqDto {
     private Long userId;
     private List<UUID> menuIds;
-    private boolean isType;
+    private boolean type;
 }

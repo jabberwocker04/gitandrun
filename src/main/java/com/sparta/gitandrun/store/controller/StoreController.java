@@ -21,17 +21,18 @@ public class StoreController {
 
     // 가게 등록
     @PostMapping
-    public ResponseEntity<ApiResDto> createStore(
-            @RequestParam Long userId,
-            @RequestBody StoreRequestDto storeRequestDto) {
+    public ResponseEntity<ApiResDto> createStore(@RequestParam Long userId, @RequestBody StoreRequestDto storeRequestDto) {
         try {
             storeService.createStore(userId, storeRequestDto);
-            return ResponseEntity.ok(new ApiResDto("가게가 성공적으로 등록되었습니다.", HttpStatus.OK.value()));
+            ApiResDto response = new ApiResDto("가게가 성공적으로 등록되었습니다.", 201, null);
+            return ResponseEntity.status(201).body(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiResDto("가게 생성 권한이 없습니다.", HttpStatus.FORBIDDEN.value()));
+            ApiResDto errorResponse = new ApiResDto("가게 생성 권한이 없습니다.", 403);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
         }
     }
+
+
 
     // ID로 조회
     @GetMapping("/{storeId}")

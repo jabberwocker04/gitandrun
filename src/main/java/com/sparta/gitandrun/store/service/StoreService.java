@@ -1,5 +1,9 @@
 package com.sparta.gitandrun.store.service;
 
+import com.sparta.gitandrun.category.entity.Category;
+import com.sparta.gitandrun.category.repository.CategoryRepository;
+import com.sparta.gitandrun.region.entity.Region;
+import com.sparta.gitandrun.region.repository.RegionRepository;
 import com.sparta.gitandrun.store.dto.FullStoreResponse;
 import com.sparta.gitandrun.store.dto.LimitedStoreResponse;
 import com.sparta.gitandrun.store.dto.StoreRequestDto;
@@ -28,22 +32,47 @@ public class StoreService {
 
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
+    private final RegionRepository regionRepository;
+    private final CategoryRepository categoryRepository;
 
-    public StoreService(StoreRepository storeRepository, UserRepository userRepository) {
+    public StoreService(StoreRepository storeRepository, UserRepository userRepository, RegionRepository regionRepository, CategoryRepository categoryRepository) {
         this.storeRepository = storeRepository;
         this.userRepository = userRepository;
+        this.regionRepository = regionRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     // 가게 생성
     @Transactional
     public Store createStore(Long userId, StoreRequestDto storeRequestDto) {
-        User user = validateUserWithRoles(userId, Role.ADMIN, Role.OWNER);
+        // 사용자 정보 조회
+        User user = getUser(userId);
+
+        // 권한 체크 - ADMIN 또는 OWNER만 가능
+        if (user.getRole() != Role.ADMIN && user.getRole() != Role.OWNER) {
+            throw new IllegalArgumentException("가게 생성 권한이 없습니다.");  // 권한이 없으면 예외 발생
+        }
+
+        // 카테고리 이름으로 카테고리 조회
+        Category category = categoryRepository.findByName(storeRequestDto.getCategoryName())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다: " + storeRequestDto.getCategoryName()));
+
+        // regionId로 Region 조회
+        Region region = regionRepository.findById(storeRequestDto.getRegionId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지역입니다."));
 
         Store newStore = new Store();
         populateStoreFields(newStore, storeRequestDto, user.getUserId().toString());
 
+        // 카테고리와 지역 설정
+        newStore.setCategory(category);  // Category 설정
+        newStore.setRegion(region);      // Region 설정
+
         return storeRepository.save(newStore);
     }
+
+
+
 
     // 전체 가게 조회
     public List<?> getAllStores(Long userId) {
@@ -98,14 +127,14 @@ public class StoreService {
         return mapStoreResponse(stores, user.getRole());
     }
 
-    // 키워드 검색 및 권한에 따른 응답 제어
-    public Page<?> searchStoresByKeyword(String keyword, String sortField, int page, int size, Long userId) {
+    public Page<Store> searchStoresByKeyword(String keyword, String sortField, int page, int size, Long userId) {
         User user = getUser(userId);
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortField).descending());
-        Page<Store> stores = storeRepository.searchByKeyword(keyword, pageable);
+        // 정렬 설정
+        Sort sort = Sort.by(Sort.Direction.DESC, sortField);
+        Pageable pageable = PageRequest.of(page, size, sort);
 
-        return mapStoreResponse(stores, user.getRole());
+        return storeRepository.searchStores(keyword, pageable);
     }
 
     // 유저 조회 메서드
@@ -121,22 +150,28 @@ public class StoreService {
     }
 
     private User validateUserWithRoles(Long userId, Role... roles) {
-        User user = getUser(userId);
-        for (Role role : roles) {
-            if (user.getRole() == role) {
-                return user;
-            }
+        User user = getUser(userId); // 유저 정보 조회
+        System.out.println("User Role: " + user.getRole());  // role 값 확인
+
+        // ADMIN 권한만 체크
+        if (user.getRole() == Role.ADMIN) {
+            System.out.println("ADMIN 권한 허용.");
+            return user;  // ADMIN 권한을 가진 사용자는 정상 처리
         }
+
+        // ADMIN이 아니면 권한 없음
+        System.out.println("권한이 없는 유저입니다.");
         throw new IllegalArgumentException("요청 권한이 없습니다.");
     }
+
 
     private Map<String, Object> generateLimitedStoreDetails(Store store) {
         Map<String, Object> filteredStoreDetails = new LinkedHashMap<>();
         filteredStoreDetails.put("storeName", store.getStoreName());
         filteredStoreDetails.put("phone", store.getPhone());
-        filteredStoreDetails.put("address", store.getAddress());
-        filteredStoreDetails.put("addressDetail", store.getAddressDetail());
-        filteredStoreDetails.put("zipCode", store.getZipCode());
+        filteredStoreDetails.put("address", store.getAddress().getAddress());
+        filteredStoreDetails.put("addressDetail", store.getAddress().getAddressDetail());
+        filteredStoreDetails.put("zipCode", store.getAddress().getZipCode());
         return filteredStoreDetails;
     }
 
@@ -149,11 +184,21 @@ public class StoreService {
     private void populateStoreFields(Store store, StoreRequestDto storeRequestDto, String userId) {
         if (storeRequestDto.getStoreName() != null) store.setStoreName(storeRequestDto.getStoreName());
         if (storeRequestDto.getPhone() != null) store.setPhone(storeRequestDto.getPhone());
-        if (storeRequestDto.getCategory() != null) store.setCategory(storeRequestDto.getCategory());
+
+        // 카테고리 이름이 비어있지 않으면 카테고리 조회 후 설정
+        if (storeRequestDto.getCategoryName() != null && !storeRequestDto.getCategoryName().isEmpty()) {
+            Category category = categoryRepository.findByName(storeRequestDto.getCategoryName())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다: " + storeRequestDto.getCategoryName()));
+            store.setCategory(category);
+        } else {
+            throw new IllegalArgumentException("카테고리 이름은 필수입니다.");
+        }
+
+        // 주소 처리
         if (storeRequestDto.getAddress() != null) store.setAddress(storeRequestDto.getAddress());
-        if (storeRequestDto.getAddressDetail() != null) store.setAddressDetail(storeRequestDto.getAddressDetail());
-        if (storeRequestDto.getZipCode() != null) store.setZipCode(storeRequestDto.getZipCode());
+
         store.setUpdatedBy(userId);
         store.setUpdatedAt(LocalDateTime.now());
     }
+
 }
