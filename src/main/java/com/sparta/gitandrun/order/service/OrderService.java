@@ -144,12 +144,8 @@ public class OrderService {
     @Transactional
     public void rejectOrder(User user, Long orderId) {
 
-        List<Store> findStore = getStoreBy(user);
-
-        List<OrderMenu> findOrderMenus = getOrderMenusBy(orderId);
-
         Order order = user.getRole() == Role.OWNER
-                ? validateOwnerAccess(findOrderMenus, findStore)
+                ? validateOwnerAccess(user, orderId)
                 : getOrder(orderId);
 
         order.rejectOrder();
@@ -202,9 +198,11 @@ public class OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("접근 권한이 없습니다."));
     }
 
-    private List<OrderMenu> getOrderMenusBy(Long orderId) {
-        return orderMenuRepository.findByOrderId(orderId);
+    private Order validateOwnerAccess(User user, Long orderId) {
+        return orderRepository.findByIdAndStore_User_UserId(orderId, user.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("접근 권한이 없습니다."));
     }
+
 
     private List<OrderMenu> getOrderMenusBy(List<Long> orderIds) {
         return orderMenuRepository.findByOrderIds(orderIds);
@@ -237,19 +235,6 @@ public class OrderService {
                 .toList();
 
         return orderMenuRepository.findOrderMenusByStoreId(storeId, storeIds);
-    }
-
-    /*
-        주문 거절 검증 메서드
-    */
-
-    private Order validateOwnerAccess(List<OrderMenu> findOrderMenus, List<Store> findStore) {
-
-        if (!findStore.contains(findOrderMenus.get(0).getMenu().getStore())) {
-            throw new IllegalArgumentException("해당 주문에 접근할 권한이 없습니다.");
-        }
-
-        return findOrderMenus.get(0).getOrder();
     }
 
     /*
