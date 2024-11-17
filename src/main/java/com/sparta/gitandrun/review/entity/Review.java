@@ -55,5 +55,6 @@ public class Review extends BaseEntity {
         this.order = order;
         this.reviewContent = requestDto.getReviewContent();
         this.reviewRating = requestDto.getReviewRating();
+        initAuditInfo(user);
     }
 }
