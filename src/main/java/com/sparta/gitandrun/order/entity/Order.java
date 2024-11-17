@@ -40,7 +40,7 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "p_user_id")
     private User user;
 
-    @OneToOne(fetch = LAZY)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "p_store_id")
     private Store store;
 
