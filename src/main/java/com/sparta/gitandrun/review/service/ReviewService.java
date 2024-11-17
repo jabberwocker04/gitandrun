@@ -56,7 +56,7 @@ public class ReviewService {
         reviewRepository.save(review);
     }
 
-    // OWNER: 본인 가게 리뷰 조회
+    // OWNER: 본인 가게 리뷰만 조회
     @Transactional(readOnly = true)
     public Page<UserReviewResponseDto> getOwnerReviewsByStore(Long userId, UUID storeId, int page, int size, String sortBy) {
         List<Store> stores = storeRepository.findByUser_UserId(userId);
@@ -72,7 +72,7 @@ public class ReviewService {
         return reviews.map(UserReviewResponseDto::new);
     }
 
-    // CUSTOMER: 모든 가게 리뷰 조회
+    // 모든 가게 리뷰 조회 (OWNER 제외)
     @Transactional(readOnly = true)
     public Page<UserReviewResponseDto> getCustomerReviewsByStore(UUID storeId, int page, int size, String sortBy) {
         Pageable pageable = pageable(page, size, sortBy, false);
@@ -131,6 +131,7 @@ public class ReviewService {
         if (requestDto.getReviewRating() != null) {
             review.setReviewRating(requestDto.getReviewRating());
         }
+        review.setUpdatedBy(userDetails.getUser().getUsername());
     }
 
     //리뷰 삭제

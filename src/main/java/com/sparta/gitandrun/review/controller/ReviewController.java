@@ -97,7 +97,7 @@ public class ReviewController {
         return new ApiResDto("리뷰 조회 성공", 200, reviews);
     }
 
-    //리뷰 수정 - 완료
+    //리뷰 수정
     @PatchMapping("/{reviewId}")
     public ResponseEntity<ApiResDto> updateReview(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
