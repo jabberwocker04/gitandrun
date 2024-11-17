@@ -70,7 +70,7 @@ public class ReviewController {
 
     // CUSTOEMR, OWNER - 본인이 작성한 리뷰 조회
     @Secured({"ROLE_CUSTOMER", "ROLE_OWNER"})
-    @GetMapping("/user/myreviews")
+    @GetMapping("/myReviews")
     public ResponseEntity<ApiResDto> getMyReviewsByUserId(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(defaultValue="0") int page,
@@ -107,7 +107,7 @@ public class ReviewController {
         return ResponseEntity.ok().body(new ApiResDto("리뷰 수정 완료", HttpStatus.OK.value()));
     }
 
-    //리뷰 삭제 - 완료
+    //리뷰 삭제
     @DeleteMapping("{reviewId}")
     public ResponseEntity<ApiResDto> deleteReview(
             @PathVariable UUID reviewId,
