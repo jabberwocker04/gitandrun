@@ -1,6 +1,5 @@
 package com.sparta.gitandrun.review.repository;
 
-import com.sparta.gitandrun.order.entity.Order;
 import com.sparta.gitandrun.review.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
     // 해당 주문에 리뷰가 이미 존재하는지 확인
-    boolean existsByOrder(Order order);
+    boolean existsByOrderId(Long orderId);
 
     // CUSTOMER, OWNER: 본인이 작성한 리뷰 조회
     @Query("SELECT r FROM Review r WHERE r.user.userId = :userId AND r.isDeleted = false")

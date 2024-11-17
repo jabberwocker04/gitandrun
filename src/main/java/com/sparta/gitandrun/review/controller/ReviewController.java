@@ -32,7 +32,7 @@ public class ReviewController {
 
     //리뷰 작성
     @Secured({"ROLE_CUSTOMER", "ROLE_OWNER"})
-    @PostMapping("/write/{orderId}")
+    @PostMapping("/{orderId}")
     public ResponseEntity<ApiResDto> createReview(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestBody ReviewRequestDto requestDto,
