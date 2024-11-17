@@ -59,7 +59,7 @@ public class ReviewService {
             throw new IllegalArgumentException("본인 가게가 아닙니다.");
         }
 
-        Pageable pageable = optionPageable(page, size, sortBy);
+        Pageable pageable = pageable(page, size, sortBy, false);
         Page<Review> reviews = reviewRepository.findByStoreIdAndUserId(storeId, userId, pageable);
         reviewEmpty(reviews);
         return reviews.map(UserReviewResponseDto::new);
@@ -68,7 +68,7 @@ public class ReviewService {
     // CUSTOMER: 모든 가게 리뷰 조회
     @Transactional(readOnly = true)
     public Page<UserReviewResponseDto> getCustomerReviewsByStore(UUID storeId, int page, int size, String sortBy) {
-        Pageable pageable = optionPageable(page, size, sortBy);
+        Pageable pageable = pageable(page, size, sortBy, false);
         Page<Review> reviews = reviewRepository.findByStoreId(storeId, pageable);
         reviewEmpty(reviews);
         return reviews.map(UserReviewResponseDto::new);
@@ -77,7 +77,7 @@ public class ReviewService {
     // CUSTOEMR, OWNER - 본인이 작성한 리뷰 조회
     @Transactional(readOnly = true)
     public Page<UserReviewResponseDto> getMyReviewsByUserId(Long userId, int page, int size, String sortBy) {
-        Pageable pageable = optionPageable(page, size, sortBy);
+        Pageable pageable = pageable(page, size, sortBy, false);
         Page<Review> reviews = reviewRepository.findByUserId(userId, pageable);
         reviewEmpty(reviews);
         return reviews.map(UserReviewResponseDto::new);
@@ -87,7 +87,7 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public Page<AdminReviewResponseDto> searchReviewsWithKeyword(
             String keyword, int page, int size, String sortBy) {
-            Pageable pageable = optionPageable(page, size, sortBy);
+            Pageable pageable = pageable(page, size, sortBy, true);
 
         // keyword가 null이거나 공백인 경우 전체 조회
         if (keyword == null || keyword.trim().isEmpty()) {
@@ -156,22 +156,50 @@ public class ReviewService {
         }
     }
 
-    //페이지 처리 옵션
-    private Pageable optionPageable(int page, int size, String sortBy) {
-        String sortField = "updatedAt".equals(sortBy) ? "updatedAt" : "createdAt";
-
-        if (size != 10 && size != 30 && size != 50) {
-            throw new IllegalArgumentException("페이지 크기는 10, 30, 50 중 하나로 설정해야 합니다.");
-        }
-        return PageRequest.of(page, size, Sort.by(Sort.Order.desc(sortField)));
-    }
-
     // CUSTOMER 또는 OWNER 권한 확인
     private void checkPermission(Review review, Long userId, Role role) {
         if (role.equals(Role.CUSTOMER) || role.equals(Role.OWNER)) {
             if (!review.getUser().getUserId().equals(userId)) {
                 throw new IllegalArgumentException("본인의 리뷰만 가능합니다.");
             }
+        }
+    }
+
+    // 페이지 처리 옵션
+    private Pageable pageable(int page, int size, String sortBy, boolean isAdmin) {
+        pageSize(size);
+
+        Sort.Order order = getSortOrder(sortBy, isAdmin);
+        return PageRequest.of(page, size, Sort.by(order));
+    }
+
+    // 페이지 크기
+    private void pageSize(int size) {
+        if (size != 10 && size != 30 && size != 50) {
+            throw new IllegalArgumentException("페이지 크기는 10, 30, 50 중 하나로 설정해야 합니다.");
+        }
+    }
+
+    // 정렬 필터
+    private Sort.Order getSortOrder(String sortBy, boolean isAdmin) {
+        switch (sortBy) {
+            case "createdAt:asc":
+                return Sort.Order.asc("createdAt"); // 오래된 순 (오름차순)
+            case "createdAt":
+                return Sort.Order.desc("createdAt"); // 최근 생성순 (내림차순)
+            case "reviewRating:desc":
+                return Sort.Order.desc("reviewRating"); // 별점 높은 순
+            case "reviewRating:asc":
+                return Sort.Order.asc("reviewRating"); // 별점 낮은 순
+            case "updatedAt":
+                // 관리자만 업데이트 순 가능
+                if (isAdmin) {
+                    return Sort.Order.desc("updatedAt");
+                } else {
+                    throw new IllegalArgumentException("관리자만 사용 가능합니다.");
+                }
+            default:
+                return Sort.Order.desc("createdAt"); // 기본값: 생성일순
         }
     }
 }
