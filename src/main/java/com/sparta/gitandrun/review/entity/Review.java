@@ -3,6 +3,7 @@ package com.sparta.gitandrun.review.entity;
 import com.sparta.gitandrun.common.entity.BaseEntity;
 import com.sparta.gitandrun.review.dto.ReviewRequestDto;
 import com.sparta.gitandrun.order.entity.Order;
+import com.sparta.gitandrun.store.entity.Store;
 import com.sparta.gitandrun.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,8 +34,9 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user; //회원별 조회
 
-    @Column(name = "store_id", nullable = false)
-    private UUID storeId; //가게별 조회
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store; //가게별 조회
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false, unique = true)
@@ -49,9 +51,9 @@ public class Review extends BaseEntity {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
-    public Review(ReviewRequestDto requestDto, User user, UUID storeId, Order order) {
+    public Review(ReviewRequestDto requestDto, User user, Store store, Order order) {
         this.user = user;
-        this.storeId = storeId;
+        this.store = store;
         this.order = order;
         this.reviewContent = requestDto.getReviewContent();
         this.reviewRating = requestDto.getReviewRating();

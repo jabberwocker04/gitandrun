@@ -6,9 +6,7 @@ import com.sparta.gitandrun.review.dto.UserReviewResponseDto;
 import com.sparta.gitandrun.review.entity.Review;
 import com.sparta.gitandrun.review.repository.ReviewRepository;
 import com.sparta.gitandrun.order.entity.Order;
-import com.sparta.gitandrun.order.entity.OrderMenu;
 import com.sparta.gitandrun.order.entity.OrderStatus;
-import com.sparta.gitandrun.order.repository.OrderMenuRepository;
 import com.sparta.gitandrun.order.repository.OrderRepository;
 import com.sparta.gitandrun.store.entity.Store;
 import com.sparta.gitandrun.store.repository.StoreRepository;
@@ -30,21 +28,24 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final OrderRepository orderRepository;
-    private final OrderMenuRepository orderMenuRepository;
     private final StoreRepository storeRepository;
 
     // 리뷰 작성
     @Transactional
     public void createReview(ReviewRequestDto requestDto, Long userId, Long orderId) {
-        Order order = getOrder(orderId, userId);
+        // 1. 주문 조회
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
 
-        if (reviewRepository.existsByOrderId(orderId)) {
-            throw new IllegalArgumentException("이미 리뷰가 작성된 주문입니다.");
+        // 2. 주문 소유 및 상태 확인
+        validateOrder(order, userId);
+
+        // 3. 중복 리뷰 확인
+        if (reviewRepository.existsByOrder(order)) {
+            throw new IllegalStateException("이미 리뷰가 작성된 주문입니다.");
         }
 
-        UUID storeId = order.getStore().getStoreId();
-
-        Review review = new Review(requestDto, order.getUser(), storeId, order);
+        Review review = new Review(requestDto, order.getUser(), order.getStore(), order);
         reviewRepository.save(review);
     }
 
@@ -136,16 +137,16 @@ public class ReviewService {
     }
 
     // 주문 존재 여부 및 본인 주문 확인
-    private Order getOrder(Long orderId, Long userId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 주문을 찾을 수 없습니다."));
+    private void validateOrder(Order order, Long userId) {
+        // 주문 소유자 확인
         if (!order.getUser().getUserId().equals(userId)) {
-            throw new IllegalArgumentException("본인의 주문만 리뷰를 작성할 수 있습니다.");
+            throw new SecurityException("해당 주문에 대한 권한이 없습니다.");
         }
-        if (!order.getOrderStatus().equals(OrderStatus.COMPLETED)) {
-            throw new IllegalArgumentException("완료된 주문만 리뷰 작성이 가능합니다.");
+
+        // 주문 상태 확인
+        if (order.getOrderStatus() != OrderStatus.COMPLETED) {
+            throw new IllegalArgumentException("리뷰를 작성할 수 있는 상태의 주문이 아닙니다.");
         }
-        return order;
     }
 
     // 리뷰가 비어있는지 확인

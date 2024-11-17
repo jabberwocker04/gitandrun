@@ -28,7 +28,7 @@ public class AdminReviewResponseDto {
         this.reviewId = review.getReviewId();
         this.userId = review.getUser().getUserId();
         this.orderId = review.getOrder().getId();
-        this.storeId = review.getStoreId();
+        this.storeId = review.getStore().getStoreId();
         this.reviewContent = review.getReviewContent();
         this.reviewRating = review.getReviewRating();
         this.createdBy = review.getCreatedBy();
