@@ -23,6 +23,8 @@
 ### ● 기대 효과
 AI를 통해 AI가 생성한 자연스러운 메뉴 설명으로 고객에게 메뉴의 매력을 효과적으로 전달.
 
+---
+
 ## ⏳ 개발 기간
 24.11.06 ~ 24.11.18
 
@@ -36,6 +38,8 @@ AI를 통해 AI가 생성한 자연스러운 메뉴 설명으로 고객에게 �
 팀원 2 : 이현민 - 유저 도메인, 인증 / 인가
 
 팀원 3 : 홍유진 - 리뷰 도메인
+
+---
 
 ## 💻 개발 환경
 
@@ -53,6 +57,27 @@ AI를 통해 AI가 생성한 자연스러운 메뉴 설명으로 고객에게 �
 ### ● Tools
 <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=GitHub&logoColor=white"> <img src="https://img.shields.io/badge/Notion-000000?style=flat&logo=notion&logoColor=white"> <img src="https://img.shields.io/badge/Postman-FF6C37?style=flat&logo=Postman&logoColor=white"> <img src="https://img.shields.io/badge/Intellij IDEA-3B00B9?style=flat&logo=Intellij IDEA&logoColor=white"> <img src="https://img.shields.io/badge/ZEP-0049D7?style=flat"> 
 
+---
+## ▶️ 실행 방법
+
+## 서비스 구성 및 실행 방법
+
+### 1. 레포지토리 클론
+```bash
+git clone https://github.com/jabberwocker04/gitandrun.git
+```
+
+### 2. 의존성 설치 및 빌드
+```bash
+./gradlew build
+```
+
+### 3. 개발 서버 실행
+```bash
+./gradlew bootRun
+```
+
+---
 
 ## 📚주요 기능
 
