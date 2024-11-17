@@ -32,9 +32,8 @@ public class OrderController {
     */
     @Secured("ROLE_CUSTOMER")
     @PostMapping
-    public ResponseEntity<ApiResDto> createOrder(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestBody ReqOrderPostDTO dto) {
+    public ResponseEntity<ApiResDto> createOrder(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                 @RequestBody ReqOrderPostDTO dto) {
 
         orderService.createOrder(userDetails.getUser(), dto);
 
@@ -47,11 +46,11 @@ public class OrderController {
    */
     @Secured("ROLE_CUSTOMER")
     @GetMapping("/customer")
-    public ResponseEntity<ResDto<ResOrderGetByCustomerDTO>> getByCustomer(
+    public ResponseEntity<ResDto<ResOrderGetByCustomerDTO>> readByCustomer(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        return orderService.getByCustomer(userDetails.getUser(), pageable);
+        return orderService.readByCustomer(userDetails.getUser(), pageable);
     }
 
     /*
@@ -61,20 +60,20 @@ public class OrderController {
 
     @Secured("ROLE_OWNER")
     @GetMapping("/owner")
-    public ResponseEntity<ResDto<ResOrderGetByOwnerDTO>> getByOwner(
+    public ResponseEntity<ResDto<ResOrderGetByOwnerDTO>> readByOwner(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(name = "storeId", required = false) UUID storeId) {
 
-        return orderService.getByOwner(userDetails.getUser(), pageable, storeId);
+        return orderService.readByOwner(userDetails.getUser(), pageable, storeId);
     }
 
     /*
         주문 단일 및 상세 조회
     */
     @GetMapping("/{orderId}")
-    public ResponseEntity<ResDto<ResOrderGetByIdDTO>> getById(@PathVariable("orderId") Long orderId) {
-        return orderService.getBy(orderId);
+    public ResponseEntity<ResDto<ResOrderGetByIdDTO>> readById(@PathVariable("orderId") Long orderId) {
+        return orderService.readById(orderId);
     }
 
     /*
