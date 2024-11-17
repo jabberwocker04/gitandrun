@@ -2,6 +2,7 @@ package com.sparta.gitandrun.order.dto.res;
 
 import com.sparta.gitandrun.order.entity.Order;
 import com.sparta.gitandrun.order.entity.OrderMenu;
+import com.sparta.gitandrun.store.entity.Store;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,7 +33,7 @@ public class ResOrderGetByCustomerDTO {
     @Getter
     public static class OrderPage extends PagedModel<OrderPage.OrderDTO> {
 
-        public OrderPage(Page<Order> orderPage, List<OrderMenu> orderMenus) {
+        private OrderPage(Page<Order> orderPage, List<OrderMenu> orderMenus) {
             super(
                     new PageImpl<>(
                             OrderDTO.from(orderPage.getContent(), orderMenus),
@@ -53,15 +54,16 @@ public class ResOrderGetByCustomerDTO {
             private String status;
             private String type;
             private List<OrderMenuDTO> orderMenuDTOS;
+            private StoreDTO storeDTO;
             private int totalPrice;
 
-            public static List<OrderDTO> from(List<Order> orders, List<OrderMenu> orderMenus) {
+            private static List<OrderDTO> from(List<Order> orders, List<OrderMenu> orderMenus) {
                 return orders.stream()
                         .map(order -> from(order, orderMenus))
                         .toList();
             }
 
-            public static OrderDTO from(Order order, List<OrderMenu> orderMenus) {
+            private static OrderDTO from(Order order, List<OrderMenu> orderMenus) {
 
                 List<OrderMenuDTO> orderMenuDTOS = OrderMenuDTO.from(orderMenus).get(order.getId());
 
@@ -71,6 +73,7 @@ public class ResOrderGetByCustomerDTO {
                         .type(order.getOrderType().getType())
                         .orderMenuDTOS(orderMenuDTOS)
                         .totalPrice(sumFrom(orderMenuDTOS))
+                        .storeDTO(StoreDTO.from(order.getStore()))
                         .build();
             }
 
@@ -103,13 +106,30 @@ public class ResOrderGetByCustomerDTO {
                             ));
                 }
 
-                public static OrderMenuDTO from(OrderMenu orderMenu) {
+                private static OrderMenuDTO from(OrderMenu orderMenu) {
                     return OrderMenuDTO.builder()
                             .orderMenuId(orderMenu.getId())
                             .menuId(orderMenu.getMenu().getMenuId())
                             .menuName(orderMenu.getMenu().getMenuName())
                             .menuPrice(orderMenu.getOrderPrice())
                             .count(orderMenu.getOrderCount())
+                            .build();
+                }
+
+
+            }
+
+            @Getter
+            @Builder
+            @NoArgsConstructor
+            @AllArgsConstructor
+            private static class StoreDTO {
+
+                private String name;
+
+                private static StoreDTO from (Store store) {
+                    return StoreDTO.builder()
+                            .name(store.getStoreName())
                             .build();
                 }
             }
