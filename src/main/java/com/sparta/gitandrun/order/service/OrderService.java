@@ -119,13 +119,11 @@ public class OrderService {
 
         List<OrderMenu> findOrderMenus = orderMenuRepository.findByOrderId(orderId);
 
-        Store store = findOrderMenus.get(0).getMenu().getStore();
-
         return new ResponseEntity<>(
                 ResDto.<ResOrderGetByIdDTO>builder()
                         .code(HttpStatus.OK.value())
                         .message("주문 조회에 성공했습니다.")
-                        .data(ResOrderGetByIdDTO.of(findOrder, findOrderMenus, store))
+                        .data(ResOrderGetByIdDTO.of(findOrder, findOrderMenus))
                         .build(),
                 HttpStatus.OK
         );

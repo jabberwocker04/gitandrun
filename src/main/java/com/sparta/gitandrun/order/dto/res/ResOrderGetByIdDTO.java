@@ -22,34 +22,14 @@ import java.util.stream.Collectors;
 public class ResOrderGetByIdDTO {
 
     private OrderDTO orderDTO;
-    private StoreDTO storeDTO;
 
-    public static ResOrderGetByIdDTO of(Order order, List<OrderMenu> orderMenus, Store store) {
+    public static ResOrderGetByIdDTO of(Order order, List<OrderMenu> orderMenus) {
         return ResOrderGetByIdDTO.builder()
                 .orderDTO(OrderDTO.from(order, orderMenus))
-                .storeDTO(StoreDTO.from(store))
                 .build();
     }
 
-    @Getter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    private static class StoreDTO {
-        private UUID storeId;
-        private String zipcode;
-        private String address;
-        private String addressDetail;
 
-        private static StoreDTO from(Store store) {
-            return StoreDTO.builder()
-                    .storeId(store.getStoreId())
-                    .zipcode(store.getAddress().getZipCode())
-                    .address(store.getAddress().getAddress())
-                    .addressDetail(store.getAddress().getAddressDetail())
-                    .build();
-        }
-    }
 
     @Getter
     @Builder
@@ -62,8 +42,9 @@ public class ResOrderGetByIdDTO {
         private LocalDateTime createdAt;
         private List<OrderMenuDTO> orderMenuDTOS;
         private int totalPrice;
+        private StoreDTO storeDTO;
 
-        public static OrderDTO from(Order order, List<OrderMenu> orderMenus) {
+        private static OrderDTO from(Order order, List<OrderMenu> orderMenus) {
 
             List<OrderMenuDTO> orderMenuDTOS = OrderMenuDTO.from(orderMenus).get(order.getId());
 
@@ -74,6 +55,7 @@ public class ResOrderGetByIdDTO {
                     .createdAt(order.getCreatedAt())
                     .orderMenuDTOS(orderMenuDTOS)
                     .totalPrice(sumFrom(orderMenuDTOS))
+                    .storeDTO(OrderDTO.StoreDTO.from(order.getStore()))
                     .build();
         }
 
@@ -87,7 +69,7 @@ public class ResOrderGetByIdDTO {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
-        public static class OrderMenuDTO {
+        private static class OrderMenuDTO {
 
             private Long orderMenuId;
             private UUID menuId;
@@ -106,13 +88,33 @@ public class ResOrderGetByIdDTO {
                         ));
             }
 
-            public static OrderMenuDTO from(OrderMenu orderMenu) {
+            private static OrderMenuDTO from(OrderMenu orderMenu) {
                 return OrderMenuDTO.builder()
                         .orderMenuId(orderMenu.getId())
                         .menuId(orderMenu.getMenu().getMenuId())
                         .menuName(orderMenu.getMenu().getMenuName())
                         .menuPrice(orderMenu.getOrderPrice())
                         .count(orderMenu.getOrderCount())
+                        .build();
+            }
+        }
+
+        @Getter
+        @Builder
+        @NoArgsConstructor
+        @AllArgsConstructor
+        private static class StoreDTO {
+            private UUID storeId;
+            private String zipcode;
+            private String address;
+            private String addressDetail;
+
+            private static StoreDTO from(Store store) {
+                return StoreDTO.builder()
+                        .storeId(store.getStoreId())
+                        .zipcode(store.getAddress().getZipCode())
+                        .address(store.getAddress().getAddress())
+                        .addressDetail(store.getAddress().getAddressDetail())
                         .build();
             }
         }
