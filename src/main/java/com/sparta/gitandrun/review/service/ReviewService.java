@@ -90,20 +90,28 @@ public class ReviewService {
         return reviews.map(UserReviewResponseDto::new);
     }
 
-    // 관리자 - 모든 리뷰 검색 (키워드)
+    // 관리자 - 모든 리뷰 검색 (reviewContent, userId, reviewId, storeId)
     @Transactional(readOnly = true)
-    public Page<AdminReviewResponseDto> searchReviewsWithKeyword(
-            String keyword, int page, int size, String sortBy) {
-            Pageable pageable = pageable(page, size, sortBy, true);
+    public Page<AdminReviewResponseDto> searchReviewsWithFilters(
+            String keyword, Long userId, UUID reviewId, UUID storeId, int page, int size, String sortBy) {
+        Pageable pageable = pageable(page, size, sortBy, true);
 
-        // keyword가 null이거나 공백인 경우 전체 조회
-        if (keyword == null || keyword.trim().isEmpty()) {
+        // 필터 조건이 모두 비어 있는지 확인
+        boolean isEmptyFilter = (keyword == null || keyword.trim().isEmpty())
+                && userId == null
+                && reviewId == null
+                && storeId == null;
+
+        // 필터 조건이 모두 비어 있으면 전체 리뷰 조회
+        if (isEmptyFilter) {
             Page<Review> allReviews = reviewRepository.findAll(pageable);
             reviewEmpty(allReviews);
             return allReviews.map(AdminReviewResponseDto::new);
         }
 
-        Page<Review> reviews = reviewRepository.searchReviewsWithKeyword(keyword, pageable);
+        // 필터 조건이 있을 경우 필터링해서 조회
+        Page<Review> reviews = reviewRepository.searchReviewsWithFilters(
+                keyword, userId, reviewId, storeId, pageable);
         reviewEmpty(reviews);
         return reviews.map(AdminReviewResponseDto::new);
     }

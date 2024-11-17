@@ -81,15 +81,19 @@ public class ReviewController {
         return ResponseEntity.ok().body(new ApiResDto("본인 리뷰 조회 성공", HttpStatus.OK.value(), reviews));
     }
 
-    // 관리자 - 모든 리뷰 검색 (키워드)
+    // 관리자 - 모든 리뷰 검색 (reviewContent, userId, reviewId, storeId)
     @Secured({"ROLE_MANAGER", "ROLE_ADMIN"})
     @GetMapping("/admin")
-    public ApiResDto getReviewsByKeyword(
-            @RequestParam(required = false) String keyword,
+    public ApiResDto getReviewsByFilters(
+            @RequestParam(required = false) String keyword,    // 키워드 검색
+            @RequestParam(required = false) Long userId,      // userId로 검색
+            @RequestParam(required = false) UUID reviewId,    // reviewId로 검색
+            @RequestParam(required = false) UUID storeId,     // storeId로 검색
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy) {
-        Page<AdminReviewResponseDto> reviews = reviewService.searchReviewsWithKeyword(keyword, page, size, sortBy);
+        Page<AdminReviewResponseDto> reviews = reviewService.searchReviewsWithFilters(
+                keyword, userId, reviewId, storeId, page, size, sortBy);
         return new ApiResDto("리뷰 조회 성공", 200, reviews);
     }
 
