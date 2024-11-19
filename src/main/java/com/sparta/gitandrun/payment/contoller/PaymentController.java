@@ -4,9 +4,11 @@ import com.sparta.gitandrun.common.entity.ApiResDto;
 import com.sparta.gitandrun.order.dto.res.ResDto;
 import com.sparta.gitandrun.payment.dto.req.ReqPaymentCondByCustomerDTO;
 import com.sparta.gitandrun.payment.dto.req.ReqPaymentCondByManagerDTO;
+import com.sparta.gitandrun.payment.dto.req.ReqPaymentCondByOwnerDTO;
 import com.sparta.gitandrun.payment.dto.req.ReqPaymentPostDTO;
 import com.sparta.gitandrun.payment.dto.res.ResPaymentGetByIdDTO;
 import com.sparta.gitandrun.payment.dto.res.ResPaymentGetByManagerDTO;
+import com.sparta.gitandrun.payment.dto.res.ResPaymentGetByOwnerDTO;
 import com.sparta.gitandrun.payment.dto.res.ResPaymentGetByUserIdDTO;
 import com.sparta.gitandrun.payment.service.PaymentService;
 import com.sparta.gitandrun.user.security.UserDetailsImpl;
@@ -56,6 +58,23 @@ public class PaymentController {
         return paymentService.getByCustomer(userDetails.getUser(), cond, pageable);
     }
 
+    /*
+        본인 가게 주문 조회
+        - 사장 권한의 유저가 본인 가게의 전체 주문 내역을 조회할 수 있음.
+    */
+    @Secured("ROLE_OWNER")
+    @PostMapping("/owner/search/payments")
+    public ResponseEntity<ResDto<ResPaymentGetByOwnerDTO>> readPayment(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                       @RequestBody ReqPaymentCondByOwnerDTO cond,
+                                                                       @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        return paymentService.getByOwner(userDetails.getUser(), cond, pageable);
+    }
+
+//    @Secured("ROLE_OWNER")
+//    @PostMapping("/owner/search/payments")
+//    public
+
 
     /*
         MANAGER, ADMIN 결제 목록 전체 조회
@@ -78,14 +97,13 @@ public class PaymentController {
     }
 
 
-
     /*
-        MANAGER, ADMIN 결제 취소
+       CUSTOMER, MANAGER 결제 취소
     */
     @Secured({"ROLE_CUSTOMER", "ROLE_MANAGER"})
     @PatchMapping("/payment/{paymentId}")
     public ResponseEntity<ApiResDto> cancelPayment(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                   @PathVariable("paymentId")UUID paymentId) {
+                                                   @PathVariable("paymentId") UUID paymentId) {
 
         paymentService.cancelPayment(userDetails.getUser(), paymentId);
 
@@ -99,7 +117,7 @@ public class PaymentController {
     @Secured("ROLE_ADMIN")
     @DeleteMapping("/payment/{paymentId}")
     public ResponseEntity<ApiResDto> deletePayment(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                   @PathVariable("paymentId")UUID paymentId) {
+                                                   @PathVariable("paymentId") UUID paymentId) {
 
         paymentService.deletePayment(userDetails.getUser(), paymentId);
 

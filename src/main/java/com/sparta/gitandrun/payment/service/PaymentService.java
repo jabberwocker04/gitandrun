@@ -7,14 +7,17 @@ import com.sparta.gitandrun.order.repository.OrderMenuRepository;
 import com.sparta.gitandrun.order.repository.OrderRepository;
 import com.sparta.gitandrun.payment.dto.req.ReqPaymentCondByManagerDTO;
 import com.sparta.gitandrun.payment.dto.req.ReqPaymentCondByCustomerDTO;
+import com.sparta.gitandrun.payment.dto.req.ReqPaymentCondByOwnerDTO;
 import com.sparta.gitandrun.payment.dto.req.ReqPaymentPostDTO;
 import com.sparta.gitandrun.payment.dto.res.ResPaymentGetByIdDTO;
 import com.sparta.gitandrun.payment.dto.res.ResPaymentGetByManagerDTO;
+import com.sparta.gitandrun.payment.dto.res.ResPaymentGetByOwnerDTO;
 import com.sparta.gitandrun.payment.dto.res.ResPaymentGetByUserIdDTO;
 import com.sparta.gitandrun.payment.entity.Payment;
 import com.sparta.gitandrun.payment.repository.PaymentRepository;
 import com.sparta.gitandrun.user.entity.Role;
 import com.sparta.gitandrun.user.entity.User;
+import com.sparta.gitandrun.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -60,6 +63,24 @@ public class PaymentService {
                         .code(HttpStatus.OK.value())
                         .message("결제 목록 조회에 성공했습니다.")
                         .data(ResPaymentGetByUserIdDTO.of(findPaymentPage))
+                        .build(),
+                HttpStatus.OK
+        );
+    }
+
+    /*
+        사장 본인 가게 결제 목록 조회
+    */
+    @Transactional(readOnly = true)
+    public ResponseEntity<ResDto<ResPaymentGetByOwnerDTO>> getByOwner(User user, ReqPaymentCondByOwnerDTO cond, Pageable pageable) {
+
+        Page<Payment> findPaymentPage = paymentRepository.findStorePaymentsWithConditions(user.getUserId(), cond, pageable);
+
+        return new ResponseEntity<>(
+                ResDto.<ResPaymentGetByOwnerDTO>builder()
+                        .code(HttpStatus.OK.value())
+                        .message("결제 목록 조회에 성공했습니다.")
+                        .data(ResPaymentGetByOwnerDTO.of(findPaymentPage))
                         .build(),
                 HttpStatus.OK
         );

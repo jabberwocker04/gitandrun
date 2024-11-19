@@ -6,6 +6,7 @@ import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.gitandrun.payment.dto.req.ReqPaymentCondByManagerDTO;
 import com.sparta.gitandrun.payment.dto.req.ReqPaymentCondByCustomerDTO;
+import com.sparta.gitandrun.payment.dto.req.ReqPaymentCondByOwnerDTO;
 import com.sparta.gitandrun.payment.entity.Payment;
 import com.sparta.gitandrun.payment.entity.enums.PaymentStatus;
 import com.sparta.gitandrun.payment.entity.enums.SortType;
@@ -16,6 +17,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.sparta.gitandrun.order.entity.QOrder.order;
 import static com.sparta.gitandrun.payment.entity.QPayment.payment;
@@ -64,6 +66,38 @@ public class PaymentCustomRepositoryImpl implements PaymentCustomRepository {
     }
 
     @Override
+    public Page<Payment> findStorePaymentsWithConditions(Long userId, ReqPaymentCondByOwnerDTO cond, Pageable pageable) {
+
+        List<Payment> results = queryFactory
+                .selectFrom(payment)
+                .join(payment.order, order).fetchJoin()
+                .join(order.store, store).fetchJoin()
+                .join(store.user).fetchJoin()
+                .where(
+                        payment.order.store.user.userId.eq(userId)
+                )
+                .orderBy(orderSpecifier(cond.getCondition().getSortType()))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPQLQuery<Long> countQuery = queryFactory
+                .select(payment.count())
+                .from(payment)
+                .join(payment.order, order).fetchJoin()
+                .join(payment.order.store, store).fetchJoin()
+                .where(
+                        payment.isDeleted.eq(false),
+                        storeIdOrUserIdEq(userId, cond.getStore().getId()),
+                        usernameLike(cond.getCustomer().getName()),
+                        storeNameLike(cond.getStore().getName()),
+                        statusEq(cond.getCondition().getStatus())
+                );
+
+        return PageableExecutionUtils.getPage(results, pageable, countQuery::fetchOne);
+    }
+
+    @Override
     public Page<Payment> findAllPaymentsWithConditions(ReqPaymentCondByManagerDTO cond, Pageable pageable) {
 
         List<Payment> results = queryFactory
@@ -104,6 +138,14 @@ public class PaymentCustomRepositoryImpl implements PaymentCustomRepository {
 
     private BooleanExpression storeNameLike(String storeName) {
         return !hasText(storeName) ? null : payment.order.store.storeName.containsIgnoreCase(storeName);
+    }
+
+    private BooleanExpression storeIdOrUserIdEq(Long userId, UUID storeId) {
+        if (storeId != null) {
+            return payment.order.store.storeId.eq(storeId);
+        } else {
+            return payment.order.store.user.userId.eq(userId);
+        }
     }
 
     private BooleanExpression userIdEq(Long userId) {
