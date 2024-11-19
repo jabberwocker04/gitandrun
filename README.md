@@ -5,6 +5,7 @@
 |WBS|[LINK](http://hexagonal-taleggio-d78.notion.site/Git-and-Run-1363121c7bfd80f1839ccd358e83756d?pvs=73)|
 |ERD|[LINK](https://www.erdcloud.com/d/zwwsd7gtExGqthiYH)|
 |API|[LINK](https://hexagonal-taleggio-d78.notion.site/API-1363121c7bfd80e2bce1ee1295028abc?pvs=74)|
+|배포|[LINK](http://3.37.125.7:8080)|
 
 ## 🤔 프로젝트 개요
 가게 관리 및 사용자 중심 서비스를 제공하는 배달 플랫폼입니다. 이 프로젝트는 가게 소유자, 관리자, 고객을 대상으로 각각의 역할에 적합한 기능을 제공하며, 특히 생성형 인공지능 서비스(API)와 연동하여 메뉴 설명을 도와 사용자 친화적인 플랫폼을 목표로 합니다.
