@@ -2,9 +2,9 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "main" ]
 
 permissions:
   checks: write
@@ -12,29 +12,32 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'adopt'
 
-      # gradle 실행 허가
+      - name: Make application.properties
+        run: |
+          cd ./src/main/resources
+          touch application.properties
+          echo "${{ secrets.PROPERTIES }}" > application.properties
+        shell: bash
+
       - name: Run chmod to make gradlew executable
         run: chmod +x ./gradlew
 
-      # Bulid Test
       - name: Build with Gradle
         uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
         with:
           arguments: build
 
-      # PR conversation & Action에 몇 개의 테스트 중에 몇 개가 통과 되었는지
-      # 어떤 테스트 파일에서 실패했는지 가르쳐 줌.
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
@@ -42,9 +45,29 @@ jobs:
           files: |
             **/build/test-results/**/*.xml
 
-      # 테스트 파일 내에서 어디에서 테스트가 실패되었는지 가르쳐 줌.
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v3
-        if: success() || failure() 
+        if: success() || failure()
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'
+
+      - name: Docker build & push to docker repo
+        run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -f Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/gitandrun .
+          docker push ${{ secrets.DOCKER_USERNAME }}/gitandrun
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        id: deploy
+        with:
+          host: ${{ secrets.HOST }}
+          username: ubuntu
+          key: ${{ secrets.KEY }}
+          envs: GITHUB_SHA
+          script: |
+            docker pull ${{ secrets.DOCKER_USERNAME }}/gitandrun
+            docker stop $(docker ps -a -q)
+            docker run -d --log-driver=syslog -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/gitandrun
+            docker rm $(docker ps --filter 'status=exited' -a -q)
+            docker image prune -a -f
